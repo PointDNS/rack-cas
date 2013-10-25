@@ -3,13 +3,14 @@ require 'rack-cas/service_validation_response'
 
 module RackCAS
   class Server
-    def initialize(url)
+    def initialize(url, login_suffix = "login")
       @url = RackCAS::URL.parse(url)
+      @login_suffix = login_suffix
     end
 
     def login_url(service_url, params = {})
       service_url = URL.parse(service_url).to_s
-      @url.dup.append_path('login').add_params({service: service_url}.merge(params))
+      @url.dup.append_path(@login_suffix).add_params({service: service_url}.merge(params))
     end
 
     def logout_url(params = {})

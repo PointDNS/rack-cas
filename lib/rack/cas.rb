@@ -4,11 +4,12 @@ require 'rack-cas/server'
 require 'rack-cas/cas_request'
 
 class Rack::CAS
-  attr_accessor :server_url
+  attr_accessor :server_url, :login_url_suffix
 
   def initialize(app, config={})
     @app = app
     @server_url = config.delete(:server_url)
+    @login_url_suffix = config.delete(:login_url_suffix)
     @session_store = config.delete(:session_store)
     @config = config || {}
 
@@ -34,7 +35,7 @@ class Rack::CAS
       rescue RackCAS::ServiceValidationResponse::TicketInvalidError
         log env, 'rack-cas: Invalid ticket. Redirecting to CAS login.'
 
-        return redirect_to server.login_url(cas_request.service_url).to_s
+        return redirect_to server_login_url(cas_request.service_url).to_s
       end
 
       store_session request, user, cas_request.ticket, extra_attrs
@@ -45,7 +46,7 @@ class Rack::CAS
       log env, 'rack-cas: Intercepting logout request.'
 
       request.session.clear
-      return redirect_to server.logout_url(request.params).to_s
+      return redirect_to server_logout_url(request.params).to_s
     end
 
     if cas_request.single_sign_out? && @session_store
@@ -60,7 +61,7 @@ class Rack::CAS
     if response[0] == 401 # access denied
       log env, 'rack-cas: Intercepting 401 access denied response. Redirecting to CAS login.'
 
-      redirect_to server.login_url(request.url).to_s
+      redirect_to server_login_url(request.url).to_s
     else
       response
     end
@@ -68,8 +69,16 @@ class Rack::CAS
 
   protected
 
+  def server_login_url(service_url)
+    server.login_url(service_url)
+  end
+
+  def server_logout_url(service_url)
+    server.logout_url(service_url)
+  end
+
   def server
-    @server ||= RackCAS::Server.new(@server_url)
+    @server ||= RackCAS::Server.new(@server_url, @login_url_suffix)
   end
 
   def get_user(service_url, ticket)
