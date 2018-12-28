@@ -1,5 +1,3 @@
-require 'msgpack'
-
 module RackCAS
   module ActiveRecordStore
     class Session < ActiveRecord::Base
