@@ -49,13 +49,11 @@ module RackCAS
     end
 
     def pack(data)
-      ::Base64.encode64(data.to_msgpack) if data
+      ::Base64.encode64(Marshal.dump(data)) if data
     end
 
     def unpack(data)
-      MessagePack.unpack(::Base64.decode64(data)) if data
-    rescue MessagePack::MalformedFormatError
-      Marshal.load(::Base64.decode64(data))
+      Marshal.load(::Base64.decode64(data)) if data
     end
   end
 end
