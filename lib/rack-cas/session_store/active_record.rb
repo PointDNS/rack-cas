@@ -47,11 +47,11 @@ module RackCAS
     end
 
     def pack(data)
-      ::Base64.encode64(Marshal.dump(data)) if data
+      ::Base64.encode64(YAML::dump(data)) if data
     end
 
     def unpack(data)
-      Marshal.load(::Base64.decode64(data)) if data
+      YAML::load(::Base64.decode64(data)) if data
     end
   end
 end
