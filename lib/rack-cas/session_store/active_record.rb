@@ -15,7 +15,7 @@ module RackCAS
 
     private
 
-    def get_session(env, sid)
+    def find_session(env, sid)
       if sid.nil?
         sid = generate_sid
         data = nil
@@ -27,7 +27,7 @@ module RackCAS
       [sid, data]
     end
 
-    def set_session(env, sid, session_data, options)
+    def write_session(env, sid, session_data, options)
       cas_ticket = (session_data['cas']['ticket'] unless session_data['cas'].nil?)
 
       session = if ActiveRecord.version >= Gem::Version.new('4.0.0')
@@ -40,7 +40,7 @@ module RackCAS
       success ? session.session_id : false
     end
 
-    def destroy_session(env, sid, options)
+    def delete_session(env, sid, options)
       session = Session.where(session_id: sid).delete_all
 
       options[:drop] ? nil : generate_sid
